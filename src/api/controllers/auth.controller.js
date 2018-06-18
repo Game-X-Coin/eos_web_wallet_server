@@ -70,6 +70,7 @@ exports.register = async (req, res, next) => {
       const {password: activeWalletPassword, wallet: activeWallet } = await createWallet(user, `active`);
       await cleos.importKeyToWallet(activePrivate, activeWallet.walletName);
       await cleos.importKeyToWallet(ownerPrivate, 'default');
+      await cleos.importKeyToWallet(activePrivate, 'default');
       user.ownerWalletPassword = ownerWalletPassword;
       user.activeWalletPassword = activeWalletPassword;
       await user.save();

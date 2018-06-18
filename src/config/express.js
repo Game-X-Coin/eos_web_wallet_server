@@ -43,7 +43,7 @@ app.use(helmet());
 
 // enable CORS - Cross Origin Resource Sharing
 app.use(cors({
-  origin: ['http://localhost:8080', 'http://localhost:8000', ],
+  origin: process.env.CORS.split(','),
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
   credentials: true
 }));

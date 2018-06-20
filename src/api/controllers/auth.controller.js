@@ -5,7 +5,7 @@ const oauth2orize = require('oauth2orize');
 
 
 const utils = require('../utils');
-const cloes = require('../services/cleos');
+const cleos = require('../services/cleos');
 const User = require('../models/user.model');
 const RefreshToken = require('../models/refreshToken.model');
 const Wallet = require('../models/wallet.model');

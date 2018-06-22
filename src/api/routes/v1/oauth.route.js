@@ -80,7 +80,7 @@ router.route('/transaction')
     try {
       const client = await OauthClient.findOne({_id: clientId});
       if (!client) { return done(null, false); }
-      if (client.redirectUri[0].indexOf(redirectUri) < 0) return done(null, false);
+      if (client.redirectUri.indexOf(redirectUri) < 0) return done(null, false);
       return done(null, client, redirectUri);
     } catch(error) {
       return done(error);

@@ -27,6 +27,18 @@ server.grant(oauth2orize.grant.code(async (client, redirectUri, user, ares, done
   }
 }));
 
+server.grant(oauth2orize.grant.token(async (client, user, ares, done) => {
+  const token = utils.getUid(256);
+  try {
+    const at = new AccessToken({user: user.id, token, client});
+    await at.save();
+    done(null, token);
+  } catch (err) {
+    console.error(error);
+    done(err);
+  }
+}));
+
 server.exchange(oauth2orize.exchange.code(async (client, code, redirectUri, done) => {
   try {
     const authorizationCode = await AuthorizationCode.findOne({code: code}).exec();
@@ -42,9 +54,7 @@ server.exchange(oauth2orize.exchange.code(async (client, code, redirectUri, done
     console.error(error);
     done(error);
   }
-
 }));
-
 
 server.serializeClient(function(client, done) {
 
@@ -78,8 +88,7 @@ router.route('/transaction')
   }), controller.authorize);
 
 router.route('/authorize')
-  .post(validate({}), authorize(LOGGED_USER), server.decision());
-
+  .post(validate({}), authorize(LOGGED_USER), server.decision());  
 
 router.route('/token')
   .post(validate({}),
@@ -87,14 +96,12 @@ router.route('/token')
   server.token(),
   server.errorHandler());
 
-
 router.route('/me')
   .get(
   passport.authenticate('bearer', { session: false }),
   function(req, res) {
     res.json({id: req.user.account, email: req.user.email, account: req.user.account });
   });
-
 
 router.route('/transfer_token')
   .post(

@@ -1,28 +1,11 @@
 const httpStatus = require('http-status');
 
-const cleos = require('../services/cleos');
+
 const authService = require('../services/auth.service')
 const User = require('../models/user.model');
 const RefreshToken = require('../models/refreshToken.model');
-const Wallet = require('../models/wallet.model');
 
 
-/* temp function wrapper for create wallet */
-const createWallet = async (user, walletName, prefix=true) => {
-  try {
-    walletName = prefix ? `${user.account}_${walletName}` : walletName
-    const result = await cleos.createWallet(walletName);
-    const password = result.data;
-    const wallet = new Wallet({ walletName, user: user._id });
-    await wallet.save();
-    console.log(wallet);
-    console.log(password);
-    return {password, wallet};
-  } catch(error) {
-    console.error(error);
-    throw(error);
-  }
-}
 /**
  * Returns jwt token if registration was successful
  * @public
@@ -30,6 +13,7 @@ const createWallet = async (user, walletName, prefix=true) => {
 exports.register = async (req, res, next) => {
   try {
     const result = await authService.register(req.body);
+    res.status(httpStatus.CREATED).json(result);
   } catch (err) {
     throw next(err);
   }

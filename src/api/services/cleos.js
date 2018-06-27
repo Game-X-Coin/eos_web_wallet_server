@@ -1,9 +1,27 @@
 
 const util = require('util');
 const axios = require('axios');
+const Wallet = require('../models/wallet.model');
 
 const exec = util.promisify(require('child_process').exec);
 
+/* temp function wrapper for create wallet */
+exports.createWalletWithCleos = async (user, walletName, prefix=true) => {
+  debugger
+  try {
+    walletName = prefix ? `${user.account}_${walletName}` : walletName
+    const result = await createWallet(walletName);
+    const password = result.data;
+    const wallet = new Wallet({ walletName, user: user._id });
+    await wallet.save();
+    console.log(wallet);
+    console.log(password);
+    return {password, wallet};
+  } catch(error) {
+    console.error(error);
+    throw(error);
+  }
+}
 
 exports.createKey = async () => {
   try {
@@ -40,7 +58,7 @@ exports.createAccount = async (creatorAccount, accountName, ownerPublicKey, acti
 };
 
 
-exports.createWallet = async (walletName) => {
+const createWallet = exports.createWallet = async (walletName) => {
   const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} wallet create -n ${walletName}`)
   if (stderr !== '') {
     throw stderr;

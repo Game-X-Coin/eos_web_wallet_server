@@ -31,9 +31,7 @@ describe('auth.service', function() {
       expect(result.activeWalletPassword).to.be.an('string');
       expect(result.ownerWalletPassword).to.be.an('string');
       expect(result.keys).to.be.an('object');
-      expect(result.keys.active.private).to.be.an('string');
       expect(result.keys.active.public).to.be.an('string');
-      expect(result.keys.owner.private).to.be.an('string');
       expect(result.keys.owner.public).to.be.an('string');
       expect(result.token).to.be.an('object');
       expect(result.token.accessToken).to.be.an('string');

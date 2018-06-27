@@ -1,11 +1,13 @@
 const { expect } = require('chai');
-const { createKey, importKey } = require('../../../src/api/services/wallet.service');
-const { unlockWallet, lockWallet, walletPassword } = require('../../helpers/wallet.helper');
+const { connect } = require('../../../src/config/mongoose');
+const { createKey, importKey, createEOSAccount } = require('../../../src/api/services/wallet.service');
+const { addUser, removeUser } = require('../../../src/api/services/user.service');
+const { unlockWallet, lockWallet, walletPassword, getRandomAccount } = require('../../helpers/wallet.helper');
 const { removeKey } = require('../../../src/api/services/cleos');
-
 
 describe('wallet.service', function () {
   before(async () => {
+    connect();
     await unlockWallet();
   });
 
@@ -34,6 +36,32 @@ describe('wallet.service', function () {
     it('should import key', async () => {
       const result = await importKey('default', privateKey);
       expect(result).to.be.equal('Created');
+    });
+  });
+
+  describe('createEOSAccount', () => {
+    let user
+    const account = getRandomAccount()
+    const newUser = {
+      account,
+      email: `${account}@gamil.com`,
+      password: '12341234'
+    };
+    before(async () => {
+      user = await addUser(newUser);
+    });
+
+    after(async () => {
+      await removeUser(newUser);
+    });
+
+    it('should create eos account', async () => {
+      const result = await createEOSAccount(user);
+      expect(result.activeWalletPassword).to.be.an('string');
+      expect(result.ownerWalletPassword).to.be.an('string');
+      expect(result.keys).to.be.an('object');
+      expect(result.keys.active.public).to.be.an('string');
+      expect(result.keys.owner.public).to.be.an('string');
     });
   });
 });

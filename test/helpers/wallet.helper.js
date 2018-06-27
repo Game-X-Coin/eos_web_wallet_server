@@ -1,7 +1,7 @@
 const { unlock, lock } = require('../../src/api/services/wallet.service');
 const WALLET_PASSWORD = 'PW5KKQcUS5jiDa53zL3FZSyfBkvAYwfTf8da5AN3b1ZDEvDpvAjmH'
 const DEFAULT_WALLET = 'default';
-const ACCOUNT_RULE = '.12345abcdefghijklmnopqrstuvwxyz';
+const ACCOUNT_RULE = '12345abcdefghijklmnopqrstuvwxyz';
 const MAX_ACCOUNT_LENGTH = 13;
 
 exports.walletPassword = WALLET_PASSWORD;

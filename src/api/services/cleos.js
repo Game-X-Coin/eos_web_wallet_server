@@ -7,7 +7,6 @@ const exec = util.promisify(require('child_process').exec);
 
 /* temp function wrapper for create wallet */
 exports.createWalletWithCleos = async (user, walletName, prefix=true) => {
-  debugger
   try {
     walletName = prefix ? `${user.account}_${walletName}` : walletName
     const result = await createWallet(walletName);
@@ -26,7 +25,7 @@ exports.createWalletWithCleos = async (user, walletName, prefix=true) => {
 exports.createKey = async () => {
   try {
     const keyRegex = /Private key: ([a-zA-Z0-9_]*)(\s*)Public key: ([a-zA-Z0-9_]*)/g;
-    const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} create key`);
+    const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} create key`);
     if (stderr) {
       1;
     }
@@ -42,7 +41,7 @@ exports.createKey = async () => {
 
 exports.createAccount = async (creatorAccount, accountName, ownerPublicKey, activePublicKey) => {
   try {
-    const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} create account ${creatorAccount} ${accountName} ${ownerPublicKey} ${activePublicKey}`);
+    const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} create account ${creatorAccount} ${accountName} ${ownerPublicKey} ${activePublicKey}`);
     if (stderr) {
       console.error('create Account error');
       console.log(stderr);
@@ -59,7 +58,7 @@ exports.createAccount = async (creatorAccount, accountName, ownerPublicKey, acti
 
 
 const createWallet = exports.createWallet = async (walletName) => {
-  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} wallet create -n ${walletName}`)
+  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} wallet create -n ${walletName}`)
   if (stderr !== '') {
     throw stderr;
   } else {
@@ -70,12 +69,12 @@ const createWallet = exports.createWallet = async (walletName) => {
 }
 
 exports.importKeyToWallet = async (key, walletName) => {
-  const result = await exec(`${process.env.CLEOS_EXEC} wallet import ${key} -n ${walletName}`);
+  const result = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} wallet import ${key} -n ${walletName}`);
 
 }
 
 exports.getBalance = async (accountName, tokenName='GXQ') => {
-  const str = `${process.env.CLEOS_EXEC} get currency balance eosio.token ${accountName} ${tokenName ? tokenName : ''}`;
+  const str = `${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} get currency balance eosio.token ${accountName} ${tokenName ? tokenName : ''}`;
   console.log(str);
   const { stdout, stderr } = await exec(str);
   if (stdout === '') {
@@ -86,7 +85,7 @@ exports.getBalance = async (accountName, tokenName='GXQ') => {
 }
 
 exports.getBalances = async (accountName) => {
-  const str = `${process.env.CLEOS_EXEC} get currency balance eosio.token ${accountName}`;
+  const str = `${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} get currency balance eosio.token ${accountName}`;
   console.log(str);
   const { stdout, stderr } = await exec(str);
   if (stdout === '') {
@@ -106,7 +105,7 @@ exports.getBalances = async (accountName) => {
 // cleos push action gxc.token transfer '[ "eosio", "tester", "25.0000 EOS", "m" ]' -p eosio
 exports.requestFaucet = async(accountName, quantity, symbol="SYS") => {
 
-  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} push action eosio.token transfer '[ "gxc.token", "${accountName}", "5.0000 ${symbol}", "m" ]' -p gxc.token`)
+  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} push action eosio.token transfer '[ "gxc.token", "${accountName}", "5.0000 ${symbol}", "m" ]' -p gxc.token`)
   if(stdout.indexOf('executed transaction:') >= 0) {
     const keyRegex = /executed transaction: ([a-zA-Z0-9_]*)(\s*)/gmi;
     const [ ,transactionId] = keyRegex.exec(stdout);
@@ -117,7 +116,7 @@ exports.requestFaucet = async(accountName, quantity, symbol="SYS") => {
 }
 
 exports.newTransaction = async(from, to, quantity, symbol, memo, wallet) => {
-  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} push action eosio.token transfer '[ "${from}", "${to}", "${parseFloat(quantity).toFixed(4)} ${symbol}", "${memo}" ]' -p ${from}`)
+  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} push action eosio.token transfer '[ "${from}", "${to}", "${parseFloat(quantity).toFixed(4)} ${symbol}", "${memo}" ]' -p ${from}`)
   if(stderr.indexOf('executed transaction:') >= 0) {
     const keyRegex = /executed transaction: ([a-zA-Z0-9_]*)(\s*)/gmi;
     const [ ,transactionId] = keyRegex.exec(stderr);
@@ -128,6 +127,12 @@ exports.newTransaction = async(from, to, quantity, symbol, memo, wallet) => {
 }
 
 exports.getTransaction = async(transactionId) => {
-  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} get transaction ${transactionId}`)
+  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} get transaction ${transactionId}`)
   return JSON.parse(stdout);
+}
+
+exports.removeKey = async ({publicKey, walletPassword}) => {
+  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url ${process.env.CLEOS_HTTP_ENDPOINT} wallet remove_key ${publicKey} --password ${walletPassword}`)
+  if (stderr) { throw stderr }
+  return JSON.parse(stdout)
 }

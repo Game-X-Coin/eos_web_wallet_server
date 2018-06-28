@@ -1,6 +1,6 @@
 const { expect } = require('chai');
 const { connect } = require('../../../src/config/mongoose');
-const { createKey, importKey, createEOSAccount } = require('../../../src/api/services/wallet.service');
+const { createKey, importKey, createEOSAccount, lock, unlock, lock_all, open, listKeys } = require('../../../src/api/services/wallet.service');
 const { addUser, removeUser } = require('../../../src/api/services/user.service');
 const { unlockWallet, lockWallet, walletPassword, getRandomAccount } = require('../../helpers/wallet.helper');
 const { removeKey } = require('../../../src/api/services/cleos');
@@ -47,6 +47,7 @@ describe('wallet.service', function () {
       email: `${account}@gamil.com`,
       password: '12341234'
     };
+
     before(async () => {
       user = await addUser(newUser);
     });
@@ -62,6 +63,52 @@ describe('wallet.service', function () {
       expect(result.keys).to.be.an('object');
       expect(result.keys.active.public).to.be.an('string');
       expect(result.keys.owner.public).to.be.an('string');
+    });
+  });
+
+  describe('listKeys', () => {
+    it('should get keys list', async () => {
+      const keys = await listKeys('default', 'PW5KKQcUS5jiDa53zL3FZSyfBkvAYwfTf8da5AN3b1ZDEvDpvAjmH');
+      expect(keys).to.be.an('array');
+    });
+  });
+
+  describe('open', () => {
+    const walletName = 'default';
+    it('should open wallet', async () => {
+      const response = await open(walletName);
+      expect(response.status).to.be.equal(200);
+      expect(response.statusText).to.be.equal("OK");
+    });
+  });
+
+  describe('lock_all', () => {
+    it('should lock all wallets', async () => {
+      const response = await lock_all();
+      expect(response.status).to.be.equal(200);
+      expect(response.statusText).to.be.equal("OK");
+    });
+  });
+
+  describe('lock', () => {
+    const walletName = 'default';
+    it('should lock wallet', async () => {
+      const response = await lock(walletName);
+      expect(response.status).to.be.equal(200);
+      expect(response.statusText).to.be.equal("OK");
+    });
+  });
+
+  describe('unlock', () => {
+    const walletName = 'default';
+    before(async () => {
+      await lockWallet();
+    });
+
+    it('should unlock wallet', async () => {
+      const response = await unlock(walletName, walletPassword);
+      expect(response.status).to.be.equal(200);
+      expect(response.statusText).to.be.equal("OK");
     });
   });
 });

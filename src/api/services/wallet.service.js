@@ -43,9 +43,8 @@ exports.importKey = async (wallet, key) => {
   }
 }
 
-
+// todo: 확인 필요
 // const createAccount = exports.createAccount = async (creator, account, ownerPublicKey, activePublicKey) => {
-//   debugger
 //   return eos.transaction(tr => {
 //     tr.newaccount({
 //       creator,
@@ -101,10 +100,11 @@ const createEOSAccount = async (user) => {
 
 exports.createEOSAccount = createEOSAccount;
 
-exports.listKeys = async (wallet, walletPass) => {
+const listKeys = exports.listKeys = async (wallet, walletPass) => {
   try {
     const params = [wallet, walletPass];
-    return await axios.post(`${WALLET_URL}/v1/wallet/list_keys`, params);
+    const response = await axios.post(`${WALLET_URL}/v1/wallet/list_keys`, params);
+    return response.data
   } catch (e) {
     throw new Error(e);
   }
@@ -113,7 +113,7 @@ exports.listKeys = async (wallet, walletPass) => {
 exports.privateKey = async (wallet, walletPass, publicKey) => {
   try {
     if (publicKey) return null;
-    const result = this.listKeys(wallet, walletPass);
+    const result = listKeys(wallet, walletPass);
     const resultMap = new Map(result);
     return resultMap.get(publicKey);
   } catch (e) {
@@ -123,7 +123,7 @@ exports.privateKey = async (wallet, walletPass, publicKey) => {
 
 exports.open = async (wallet) => {
   try {
-    const params = wallet; 
+    const params = `"${wallet}"`; 
     return await axios.post(`${WALLET_URL}/v1/wallet/open`, params);
   } catch (e) {
     throw new Error(e);
@@ -132,7 +132,7 @@ exports.open = async (wallet) => {
 
 exports.lock = async (wallet) => {
   try {
-    const params = wallet;
+    const params = `"${wallet}"`;
     return await axios.post(`${WALLET_URL}/v1/wallet/lock`, params);
   } catch (e) {
     throw new Error(e);
@@ -141,7 +141,7 @@ exports.lock = async (wallet) => {
 
 exports.lock_all = async () => {
   try {
-    return await axios.post(`${WALLET_URL}/v1/wallet/lock_all`, params);
+    return await axios.post(`${WALLET_URL}/v1/wallet/lock_all`);
   } catch (e) {
     throw new Error(e);
   }

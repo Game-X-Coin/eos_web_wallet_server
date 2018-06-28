@@ -11,4 +11,4 @@ const config = {
   sign: true
 };
 
-export default Eos(config);
+exports.eos = Eos(config)

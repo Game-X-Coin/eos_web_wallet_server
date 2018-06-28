@@ -4,6 +4,7 @@ const path = require('path');
 require('dotenv-safe').load({
   path: path.join(__dirname, '../../.env'),
   sample: path.join(__dirname, '../../.env.example'),
+  test: path.join(__dirname, '../../.env.test')
 });
 
 module.exports = {
@@ -11,6 +12,10 @@ module.exports = {
   port: process.env.PORT,
   jwtSecret: process.env.JWT_SECRET,
   jwtExpirationInterval: process.env.JWT_EXPIRATION_MINUTES,
+  cleos: {
+    url: process.env.CLEOS_HTTP_ENDPOINT,
+    exec: process.env.CLEOS_EXEC
+  }, 
   mongo: {
     uri: process.env.NODE_ENV === 'test'
       ? process.env.MONGO_URI_TESTS

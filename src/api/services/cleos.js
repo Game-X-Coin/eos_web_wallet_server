@@ -1,9 +1,26 @@
 
 const util = require('util');
 const axios = require('axios');
+const Wallet = require('../models/wallet.model');
 
 const exec = util.promisify(require('child_process').exec);
 
+/* temp function wrapper for create wallet */
+exports.createWalletWithCleos = async (user, walletName, prefix=true) => {
+  try {
+    walletName = prefix ? `${user.account}_${walletName}` : walletName
+    const result = await createWallet(walletName);
+    const password = result.data;
+    const wallet = new Wallet({ walletName, user: user._id });
+    await wallet.save();
+    console.log(wallet);
+    console.log(password);
+    return {password, wallet};
+  } catch(error) {
+    console.error(error);
+    throw(error);
+  }
+}
 
 exports.createKey = async () => {
   try {
@@ -40,7 +57,7 @@ exports.createAccount = async (creatorAccount, accountName, ownerPublicKey, acti
 };
 
 
-exports.createWallet = async (walletName) => {
+const createWallet = exports.createWallet = async (walletName) => {
   const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} wallet create -n ${walletName}`)
   if (stderr !== '') {
     throw stderr;
@@ -112,4 +129,10 @@ exports.newTransaction = async(from, to, quantity, symbol, memo, wallet) => {
 exports.getTransaction = async(transactionId) => {
   const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url=${process.env.CLEOS_HTTP_ENDPOINT} get transaction ${transactionId}`)
   return JSON.parse(stdout);
+}
+
+exports.removeKey = async ({publicKey, walletPassword}) => {
+  const { stdout, stderr } = await exec(`${process.env.CLEOS_EXEC} --wallet-url ${process.env.CLEOS_HTTP_ENDPOINT} wallet remove_key ${publicKey} --password ${walletPassword}`)
+  if (stderr) { throw stderr }
+  return JSON.parse(stdout)
 }
